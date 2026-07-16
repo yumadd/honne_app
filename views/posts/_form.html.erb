@@ -1,0 +1,96 @@
+<%= form_with(model: post, style: "max-width: 500px; margin: 0 auto; padding: 20px; font-family: sans-serif;") do |form| %>
+  <% if post.errors.any? %>
+    <div style="color: red; margin-bottom: 20px;">
+      <h2>入力エラーがあります</h2>
+      <ul>
+        <% post.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <!-- 本文入力エリア（JavaScriptで文字数をリアルタイム監視します） -->
+  <div style="margin-bottom: 25px; position: relative;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+      <label style="font-weight: bold; color: #666666;">いまのホンネは？</label>
+      <!-- 残り文字数を表示するカウンター -->
+      <span id="char-counter" style="font-size: 14px; color: #aaaaaa; font-weight: bold;">あと 140 文字</span>
+    </div>
+
+    <%= form.text_area :content, id: "honne-text-area", maxlength: 140, placeholder: "ここには誰もあなたを知る人はいません。自由に書き込んでみましょう...", style: "
+      width: 100%;
+      height: 150px;
+      padding: 20px;
+      border: none;
+      border-radius: 20px;
+      background-color: #{post.bg_color || '#F3E8FF'};
+      font-size: 16px;
+      box-sizing: border-box;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);
+      resize: none;
+      color: #333333;
+    ", oninput: "
+      const maxLength = 140;
+      const currentLength = this.value.length;
+      const counter = document.getElementById('char-counter');
+      counter.innerText = `あと ${maxLength - currentLength} 文字`;
+      
+      // 文字数が残り少なくなったら数字を赤くする可愛い演出
+      if (maxLength - currentLength <= 10) {
+        counter.style.color = '#ff4d4d';
+      } else {
+        counter.style.color = '#aaaaaa';
+      }
+    " %>
+  </div>
+
+  <!-- ハッシュタグ（カテゴリー）選択エリア -->
+  <div style="margin-bottom: 25px;">
+    <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #666666;">カテゴリーを選択</label>
+    <%= form.select :category, [["#仕事", "仕事"], ["#学校", "学校"], ["#恋愛", "恋愛"], ["#ひとりごと", "ひとりごと"]], { prompt: "カテゴリーを選んでください" }, style: "
+      width: 100%;
+      padding: 12px 20px;
+      border: 1px solid #dddddd;
+      border-radius: 15px;
+      font-size: 16px;
+      background-color: white;
+      color: #333333;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    " %>
+  </div>
+
+  <div style="margin-bottom: 25px;">
+    <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #666666;">いまのキブンは？（スタンプ）</label>
+    <%= form.select :emotion, ["😢", "🔥", "🎉", "💤"], { prompt: "スタンプを選択（任意）" }, style: "
+      width: 100%;
+      padding: 12px 20px;
+      border: 1px solid #dddddd;
+      border-radius: 15px;
+      font-size: 16px;
+      background-color: white;
+      color: #333333;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    " %>
+  </div>
+
+  <!-- 背景色のカラーコードを隠しデータとして送信する設定 -->
+  <%= form.hidden_field :bg_color %>
+
+  <!-- 送信ボタンエリア -->
+  <div style="text-align: center; margin-top: 30px;">
+    <%= form.submit "タイムラインにつぶやく", style: "
+      background-color: #ff9aa2;
+      color: white;
+      border: none;
+      font-weight: bold;
+      font-size: 16px;
+      padding: 14px 50px;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(255, 154, 162, 0.4);
+    " %>
+  </div>
+<% end %>

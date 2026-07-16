@@ -1,0 +1,133 @@
+<div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: sans-serif;">
+  
+  <!-- 上部のヘッダーメニュー（戻るボタン） -->
+  <div style="margin-bottom: 20px;">
+    <%= link_to "← タイムラインに戻る", posts_path, style: "color: #888888; text-decoration: none; font-size: 14px; font-weight: bold;" %>
+  </div>
+
+  <!-- 通知メッセージの表示 -->
+  <% if notice %>
+    <p style="color: green; text-align: center; font-weight: bold;"><%= notice %></p>
+  <% end %>
+
+  <!-- つぶやき本体のカード -->
+  <div style="
+    background-color: <%= @post.bg_color || '#F3E8FF' %>;
+    color: #333333;
+    padding: 30px;
+    margin: 20px auto;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    max-width: 450px;
+    display: flex;
+    flex-direction: column;
+    font-size: 16px;
+    line-height: 1.6;
+    position: relative;
+    box-sizing: border-box;
+  ">
+    <!-- 右上の経過時間エリア -->
+    <div style="position: absolute; top: 15px; right: 25px; font-size: 12px; color: #888888; font-weight: bold;">
+      <%
+        time_text = time_ago_in_words(@post.created_at)
+        time_text = time_text.gsub('less than a minute', '1分未満').gsub('about', '').gsub('minutes', '分').gsub('minute', '分').gsub('hours', '時間').gsub('hour', '時間').gsub('days', '日').gsub('day', '日').strip
+      %><%= time_text %>前
+    </div>
+
+    <!-- つぶやきの本文 -->
+    <div style="word-break: break-all; font-weight: 500; margin-top: 15px; margin-bottom: 15px;">
+      <%= @post.content %>
+    </div>
+
+    <!-- ハッシュタグの表示エリア -->
+    <% if @post.category.present? %>
+      <div style="margin-bottom: 20px;">
+        <%= link_to "##{@post.category}", posts_path(category: @post.category), style: "color: #5DADE2; text-decoration: none; font-weight: bold; font-size: 14px; background: rgba(255,255,255,0.6); padding: 4px 10px; border-radius: 10px; display: inline-block;" %>
+      </div>
+    <% end %>
+
+    <!-- 右下のボタンエリア -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
+      <div style="background: rgba(255, 255, 255, 0.7); padding: 6px 16px; border-radius: 20px; font-size: 14px; color: #666666; font-weight: bold; display: flex; align-items: center; gap: 6px;">
+        <span>💬 わかる！</span>
+        <span style="color: #ff9aa2; font-size: 15px;"><%= @post.likes_count || 0 %></span>
+      </div>
+
+      <!-- 🗑️ 確実なフォーム形式の削除ボタン -->
+      <%= form_with(url: post_path(@post), method: :delete, data: { turbo_confirm: "このホンネを消去してもよろしいですか？" }) do %>
+        <%= submit_tag "削除", style: "color: #ff4d4d; border: none; background: rgba(255,255,255,0.4); padding: 6px 14px; border-radius: 12px; font-size: 13px; font-weight: bold; cursor: pointer;" %>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- 💬 コメント・返信一覧エリア -->
+  <div style="margin-top: 40px;">
+    <h3 style="color: #555555; border-bottom: 2px solid #eeeeee; padding-bottom: 8px; margin-bottom: 20px; font-size: 18px;">
+      💬 コメント・会話
+    </h3>
+
+    <% if @post.comments.where(parent_id: nil).any? %>
+      <% @post.comments.where(parent_id: nil).each do |comment| %>
+        
+        <!-- 1. 通常のコメント（親） -->
+        <div style="background-color: #f9f9f9; border: 1px solid #eeeeee; padding: 15px 20px; border-radius: 15px; margin-bottom: 10px; font-size: 15px; color: #444444; line-height: 1.5;">
+          <div style="word-break: break-all;"><%= comment.content %></div>
+          <div style="text-align: right; font-size: 11px; color: #aaaaaa; margin-top: 5px; font-weight: bold;">
+            <%= time_ago_in_words(comment.created_at) %>前
+          </div>
+          
+          <!-- ↩️ 返信入力欄を開くJavaScriptのボタン -->
+          <div style="text-align: left; margin-top: 5px;">
+            <button onclick="document.getElementById('reply-form-<%= comment.id %>').style.display = document.getElementById('reply-form-<%= comment.id %>').style.display === 'none' ? 'block' : 'none'" style="background: none; border: none; color: #5DADE2; font-size: 12px; font-weight: bold; cursor: pointer; padding: 0;">
+              ↩️ 返信する
+            </button>
+          </div>
+        </div>
+
+        <!-- 孫の返信たちが縦に美しく並ぶ場所 -->
+        <% if comment.replies.any? %>
+          <% comment.replies.each do |reply| %>
+            <!-- 2. 返信コメント（孫：少し右にずらして会話っぽくします） -->
+            <div style="background-color: #f0f7f7; border-left: 3px solid #A3E2D7; padding: 12px 15px; border-radius: 0 15px 15px 0; margin-left: 30px; margin-bottom: 10px; font-size: 14px; color: #555555;">
+              <div style="word-break: break-all;"><%= reply.content %></div>
+              <div style="text-align: right; font-size: 11px; color: #aaaaaa; margin-top: 5px; font-weight: bold;">
+                <%= time_ago_in_words(reply.created_at) %>前
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+
+        <!-- 🤫 隠し返信フォーム（「返信する」を押した時だけパッと現れるJavaScript仕掛けです） -->
+        <div id="reply-form-<%= comment.id %>" style="display: none; margin-left: 30px; margin-bottom: 20px; background: #fff; padding: 15px; border-radius: 15px; border: 1px dashed #dddddd;">
+          <%= form_with(model: [@post, Comment.new], local: true) do |form| %>
+            <%= form.hidden_field :parent_id, value: comment.id %>
+            <div style="margin-bottom: 10px;">
+              <%= form.text_area :content, placeholder: "このコメントに返信してみる...", required: true, style: "width: 100%; height: 50px; padding: 10px; border: 1px solid #dddddd; border-radius: 10px; font-size: 14px; box-sizing: border-box; resize: none;" %>
+            </div>
+            <div style="text-align: right;">
+              <%= form.submit "返信を送信", style: "background-color: #5DADE2; color: white; border: none; font-weight: bold; font-size: 12px; padding: 6px 15px; border-radius: 15px; cursor: pointer;" %>
+            </div>
+          <% end %>
+        </div>
+
+      <% end %>
+    <% else %>
+      <p style="color: #aaaaaa; text-align: center; font-size: 14px; margin-top: 30px;">まだコメントはありません。優しい言葉をかけてみませんか？</p>
+    <% end %>
+  </div>
+
+  <!-- ✏️ 普通の新規コメント入力フォームエリア -->
+  <div style="margin-top: 40px; background: #fff; padding: 20px; border-radius: 20px; border: 1px solid #eeeeee;">
+    <h4 style="color: #666666; margin-top: 0; margin-bottom: 15px; font-size: 15px;">このホンネにコメントする</h4>
+    
+    <%= form_with(model: [@post, Comment.new], local: true) do |form| %>
+      <div style="margin-bottom: 15px;">
+        <%= form.text_area :content, placeholder: "共感や、優しい言葉を届けてみましょう...", required: true, style: "width: 100%; height: 80px; padding: 15px; border: 1px solid #dddddd; border-radius: 15px; font-size: 15px; box-sizing: border-box; resize: none; color: #333333;" %>
+      </div>
+      <div style="text-align: right;">
+        <%= form.submit "コメントを送信", style: "background-color: #A3E2D7; color: white; border: none; font-weight: bold; font-size: 14px; padding: 10px 24px; border-radius: 20px; cursor: pointer; box-shadow: 0 4px 6px rgba(163, 226, 215, 0.2);" %>
+      </div>
+    <% end %>
+  </div>
+
+</div>

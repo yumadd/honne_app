@@ -1,0 +1,131 @@
+<div id="<%= dom_id post %>" style="
+  background-color: <%= post.bg_color || '#F3E8FF' %>;
+  color: #333333;
+  padding: 30px;
+  margin: 25px auto;
+  border-radius: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  max-width: 450px;
+  display: flex;
+  flex-direction: column;
+  font-size: 16px;
+  line-height: 1.6;
+  position: relative;
+  box-sizing: border-box;
+">
+  <!-- 🎭 感情スタンプ表示エリア -->
+  <% if post.emotion.present? %>
+    <div style="
+      position: absolute;
+      top: -15px;
+      left: -15px;
+      font-size: 32px;
+      background: white;
+      width: 50px;
+      height: 50px;
+      border-radius: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    ">
+      <%= post.emotion %>
+    </div>
+  <% end %>
+
+  <!-- 右上の経過時間エリア（どんな英語が来ても力づくで綺麗な日本語に翻訳する設定です） -->
+  <div style="
+    position: absolute;
+    top: 15px;
+    right: 25px;
+    font-size: 12px;
+    color: #888888;
+    font-weight: bold;
+  ">
+    <%
+      time_text = time_ago_in_words(post.created_at)
+      time_text = time_text.gsub('less than a minute', '1分未満')
+                           .gsub('about', '')
+                           .gsub('minutes', '分')
+                           .gsub('minute', '分')
+                           .gsub('hours', '時間')
+                           .gsub('hour', '時間')
+                           .gsub('days', '日')
+                           .gsub('day', '日')
+                           .strip
+    %><%= time_text %>前
+  </div>
+
+  <!-- つぶやきの本文 -->
+  <div style="word-break: break-all; font-weight: 500; margin-top: 15px; margin-bottom: 15px;">
+    <%= post.content %>
+  </div>
+
+  <!-- 🏷️ ハッシュタグの表示エリア -->
+  <% if post.category.present? %>
+    <div style="margin-bottom: 20px;">
+      <%= link_to "##{post.category}", posts_path(category: post.category), style: "
+        color: #5DADE2;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 14px;
+        background: rgba(255,255,255,0.6);
+        padding: 4px 10px;
+        border-radius: 10px;
+        display: inline-block;
+      " %>
+    </div>
+  <% end %>
+
+  <!-- 右下のボタンエリア（わかる！ボタン ＆ リンク類） -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
+    
+    <!-- JavaScriptを使った「絶対に上に動かない」わかる！ボタン -->
+    <%= button_to like_post_path(post), method: :post, remote: true, class: "like-btn-#{post.id}", style: "
+      background: rgba(255, 255, 255, 0.7);
+      border: none;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      color: #666666;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+      font-weight: bold;
+    ", onclick: "
+      event.preventDefault(); 
+      const countSpan = this.querySelector('.count-span');
+      countSpan.innerText = parseInt(countSpan.innerText) + 1;
+      fetch('#{like_post_path(post)}', { method: 'POST', headers: { 'X-CSRF-Token': document.querySelector('meta[name=csrf-token]').content } });
+    " do %>
+      <span>💬 わかる！</span>
+      <span class="count-span" style="color: #ff9aa2; font-size: 15px;"><%= post.likes_count || 0 %></span>
+    <% end %>
+
+    <!-- 右側のリンクエリア（詳細 ＆ 削除） -->
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <%= link_to "詳細", post, style: "
+        color: #888888; 
+        text-decoration: none; 
+        background: rgba(255,255,255,0.4); 
+        padding: 6px 14px; 
+        border-radius: 12px;
+        font-size: 13px;
+      " %>
+
+      <%= button_to "削除", post_path(post), method: :delete, data: { turbo_confirm: "このホンネを消去してもよろしいですか？" }, style: "
+        color: #ff4d4d; 
+        border: none;
+        background: rgba(255,255,255,0.4); 
+        padding: 6px 14px; 
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: bold;
+        cursor: pointer;
+      " %>
+    </div>
+
+  </div>
+</div>

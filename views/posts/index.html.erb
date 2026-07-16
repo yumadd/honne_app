@@ -1,0 +1,50 @@
+<div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: sans-serif;">
+  
+  <!-- アプリのタイトルヘッダー -->
+  <header style="text-align: center; margin-bottom: 40px; margin-top: 20px;">
+    <h1 style="color: #555555; font-size: 28px; font-weight: bold; letter-spacing: 2px; margin-bottom: 5px;">HONNE Web</h1>
+    <p style="color: #aaaaaa; font-size: 13px; margin: 0;">誰にも言えない本音をつぶやこう</p>
+  </header>
+
+  <!-- 投稿や削除に成功した時のメッセージ表示 -->
+  <% if notice %>
+    <p style="color: green; text-align: center; margin-bottom: 20px; font-weight: bold;"><%= notice %></p>
+  <% end %>
+
+  <!-- ボタンエリア（新しくつぶやく ＆ 全リセット） -->
+  <div style="text-align: center; margin-bottom: 40px; display: flex; flex-direction: column; gap: 15px; align-items: center;">
+    
+    <!-- 新しくつぶやくボタン -->
+    <%= link_to "新しくつぶやく", new_post_path, style: "
+      background-color: #A3E2D7;
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 16px;
+      padding: 14px 40px;
+      border-radius: 30px;
+      display: inline-block;
+      box-shadow: 0 4px 10px rgba(163, 226, 215, 0.4);
+    " %>
+
+    <!-- 💥 100%エラーを回避する確実な全削除ボタン -->
+    <%= button_to "すべてのホンネをリセットする", "/posts/destroy_all", method: :delete, data: { turbo_confirm: "【注意】今までの投稿がすべて消去されます。本当によろしいですか？" }, style: "
+      color: #ff4d4d;
+      background: #fff;
+      border: 1px solid #ff4d4d;
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+      opacity: 0.7;
+    " %>
+
+  </div>
+
+  <!-- つぶやきカードたちが自動で並ぶ場所 -->
+  <div id="posts" style="margin-top: 20px;">
+    <%= render @posts %>
+  </div>
+
+</div>
