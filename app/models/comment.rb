@@ -7,4 +7,6 @@ class Comment < ApplicationRecord
 
   # 📤 元のコメントから見た「たくさんの返信（孫コメント）」をぶら下げる設定
   has_many :replies, class_name: "Comment", foreign_key: :parent_id, dependent: :destroy
+
+  validates :content, presence: true
 end
